@@ -310,17 +310,6 @@ cd backend
 pytest tests/ -v
 ```
 
----
-
-## 8. Production Deployment Guide
-
-### One-Click Render Deployment
-This repository includes a production-ready `render.yaml` blueprint:
-1. Connect this repository to your [Render](https://render.com) dashboard.
-2. Select **Blueprint** deployment.
-3. Render automatically provisions the web service, compiles the production static assets, and links the health checks.
-
----
 
 <div align="center">
 
