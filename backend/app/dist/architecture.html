@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BidLedger — Architecture Blueprint</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#08080a;color:#e4e4e7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased}
+    ::-webkit-scrollbar{width:6px;height:6px}
+    ::-webkit-scrollbar-track{background:#09090b}
+    ::-webkit-scrollbar-thumb{background:#27272a;border-radius:3px}
+    .nav{position:sticky;top:0;z-index:50;background:rgba(8,8,10,.85);border-bottom:1px solid rgba(255,255,255,.07);backdrop-filter:blur(12px);padding:.75rem 2rem;display:flex;align-items:center;justify-content:space-between}
+    .nav-brand{font-weight:700;font-size:.85rem;letter-spacing:.12em;color:#fff;font-family:monospace}
+    .nav-links{display:flex;gap:.5rem}
+    .nav-btn{background:#101014;border:1px solid rgba(255,255,255,.08);color:#a1a1aa;padding:.35rem .85rem;border-radius:.5rem;font-size:.7rem;font-family:monospace;cursor:pointer;text-decoration:none;transition:all .2s}
+    .nav-btn:hover{background:#18181b;color:#fff}
+    .nav-btn.active{background:#18181b;color:#10b981;border-color:#10b981}
+    .container{max-width:1200px;margin:0 auto;padding:2rem 1.5rem}
+    .header{padding-bottom:1.5rem;border-bottom:1px solid rgba(255,255,255,.07);margin-bottom:2rem}
+    .badge{display:inline-flex;align-items:center;gap:.4rem;font-size:.6rem;font-family:monospace;color:#10b981;text-transform:uppercase;letter-spacing:.12em;margin-bottom:.5rem}
+    .dot{width:.4rem;height:.4rem;border-radius:50%;background:#10b981}
+    h1{font-size:1.8rem;font-weight:700;color:#fff;margin-bottom:.4rem}
+    .sub{font-size:.7rem;color:#71717a;font-family:monospace;line-height:1.6}
+    /* Tier grid */
+    .tiers{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
+    @media(max-width:900px){.tiers{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:500px){.tiers{grid-template-columns:1fr}}
+    .tier{background:#0c0c10;border:1px solid rgba(255,255,255,.07);border-radius:.75rem;padding:1.25rem;display:flex;flex-direction:column;justify-content:space-between}
+    .tier-label{font-size:.6rem;font-family:monospace;text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:.3rem}
+    .tier-label.c1{color:#10b981}
+    .tier-label.c2{color:#60a5fa}
+    .tier-label.c3{color:#f59e0b}
+    .tier-label.c4{color:#a78bfa}
+    .tier h3{font-size:.8rem;font-weight:600;color:#fff;margin-bottom:.5rem}
+    .tier p{font-size:.68rem;color:#71717a;line-height:1.5;margin-bottom:.75rem}
+    .chip{display:block;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.04);border-radius:.25rem;padding:.2rem .5rem;font-size:.6rem;color:#d4d4d8;margin-bottom:.2rem;font-family:monospace}
+    .tier-footer{border-top:1px solid rgba(255,255,255,.04);padding-top:.5rem;font-size:.6rem;color:#52525b;font-family:monospace;margin-top:.5rem}
+    /* Flow diagram */
+    .flow-box{background:#0c0c10;border:1px solid rgba(255,255,255,.07);border-radius:.75rem;padding:1.5rem;margin-bottom:2rem}
+    .flow-title{display:flex;align-items:center;gap:.5rem;font-size:.7rem;font-family:monospace;font-weight:600;color:#fff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:1.25rem}
+    .flow{display:flex;align-items:center;flex-wrap:wrap;gap:.5rem;font-size:.65rem;font-family:monospace}
+    .fnode{background:#111116;border:1px solid rgba(255,255,255,.07);border-radius:.4rem;padding:.4rem .75rem;color:#e4e4e7;white-space:nowrap}
+    .farrow{color:#3f3f46;font-size:.85rem}
+    /* Pillars */
+    .pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem}
+    @media(max-width:700px){.pillars{grid-template-columns:1fr}}
+    .pillar{background:#0d0d11;border:1px solid rgba(255,255,255,.07);border-radius:.75rem;padding:1.25rem}
+    .pillar-icon{font-size:1.1rem;margin-bottom:.5rem}
+    .pillar h4{font-size:.75rem;font-weight:600;color:#fff;text-transform:uppercase;margin-bottom:.5rem}
+    .pillar p{font-size:.68rem;color:#71717a;line-height:1.55}
+    .pillar-math{border-top:1px solid rgba(255,255,255,.05);padding-top:.5rem;margin-top:.75rem;font-size:.6rem;color:#52525b;font-family:monospace}
+    /* Schema */
+    .schema-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin-bottom:2rem}
+    @media(max-width:700px){.schema-grid{grid-template-columns:1fr}}
+    .table-card{background:#0c0c10;border:1px solid rgba(255,255,255,.07);border-radius:.75rem;padding:1.25rem}
+    .table-card h4{font-size:.75rem;font-weight:600;color:#10b981;font-family:monospace;margin-bottom:.75rem}
+    .field{display:flex;justify-content:space-between;padding:.2rem 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:.62rem;font-family:monospace}
+    .field:last-child{border-bottom:none}
+    .field-name{color:#e4e4e7}
+    .field-type{color:#71717a}
+    .pk{color:#f59e0b;font-size:.55rem;margin-left:.3rem}
+    /* Footer nav */
+    .footer-nav{display:flex;justify-content:space-between;padding-top:1rem;border-top:1px solid rgba(255,255,255,.07);font-size:.7rem;font-family:monospace}
+    .footer-nav a{color:#71717a;text-decoration:none;transition:color .2s}
+    .footer-nav a:hover{color:#fff}
+    .footer-nav .right{color:#10b981}
+    .footer-nav .right:hover{color:#34d399}
+    .section-title{font-size:.8rem;font-weight:600;color:#fff;font-family:monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+    .section-title svg{width:.9rem;height:.9rem}
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <span class="nav-brand">BIDLEDGER</span>
+  <div class="nav-links">
+    <a href="/" class="nav-btn">← Live Auctions</a>
+    <a href="/architecture" class="nav-btn active">Architecture</a>
+    <a href="/tests" class="nav-btn">Test Matrix</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="badge"><span class="dot"></span>Enterprise System Blueprint</div>
+    <h1>System Architecture &amp; Technical Design</h1>
+    <p class="sub">High-concurrency dual-database architecture engineered for British Auction reverse bidding,<br>sub-second WebSocket broadcasts, and tamper-proof forced-close ceilings.</p>
+  </div>
+
+  <!-- Data Flow -->
+  <div class="flow-box">
+    <div class="flow-title">⚡ Full Stack Data &amp; Execution Flow</div>
+    <div class="flow">
+      <span class="fnode">Browser (React 19)</span>
+      <span class="farrow">→</span>
+      <span class="fnode">FastAPI (Port 8000)</span>
+      <span class="farrow">→</span>
+      <span class="fnode">British Rules Engine</span>
+      <span class="farrow">→</span>
+      <span class="fnode">Trigger Evaluator (X/Y)</span>
+      <span class="farrow">→</span>
+      <span class="fnode">PostgreSQL (Bids)</span>
+      <span class="farrow">→</span>
+      <span class="fnode">Neo4j (Graph)</span>
+      <span class="farrow">→</span>
+      <span class="fnode">WebSocket Broadcast</span>
+      <span class="farrow">→</span>
+      <span class="fnode">Live UI Update</span>
+    </div>
+  </div>
+
+  <!-- 4 Tiers -->
+  <div class="section-title">🏗 Layered Architecture (4 Tiers)</div>
+  <div class="tiers">
+    <div class="tier">
+      <div>
+        <div class="tier-label c1">[Tier 1] Client Layer</div>
+        <h3>ReactJS 19 + Vite</h3>
+        <p>Obsidian dark-mode interface inspired by modern design systems.</p>
+        <span class="chip">Live Bidding Console</span>
+        <span class="chip">Digital Clock &amp; Pulse</span>
+        <span class="chip">Leaderboard Table</span>
+        <span class="chip">Simulation Test Bench</span>
+      </div>
+      <div class="tier-footer">Protocol: HTTPS &amp; WSS</div>
+    </div>
+    <div class="tier">
+      <div>
+        <div class="tier-label c2">[Tier 2] API &amp; Rules Gateway</div>
+        <h3>Python (FastAPI)</h3>
+        <p>Asynchronous event loop for quote intake and sub-second evaluation.</p>
+        <span class="chip">British Rules Engine</span>
+        <span class="chip">Trigger Evaluator (X/Y)</span>
+        <span class="chip">Forced Close Hard Cap</span>
+        <span class="chip">WebSocket Hub (/ws)</span>
+      </div>
+      <div class="tier-footer">Pydantic v2 + Starlette</div>
+    </div>
+    <div class="tier">
+      <div>
+        <div class="tier-label c3">[Tier 3] Background Jobs</div>
+        <h3>Celery + Redis</h3>
+        <p>Distributed task queue and scheduled timers for auto-closures.</p>
+        <span class="chip">Celery Beat Scheduler</span>
+        <span class="chip">Periodic Close Monitor</span>
+        <span class="chip">Async Graph Sync Queue</span>
+        <span class="chip">Redis Broker (6379)</span>
+      </div>
+      <div class="tier-footer">RabbitMQ / Redis Broker</div>
+    </div>
+    <div class="tier">
+      <div>
+        <div class="tier-label c4">[Tier 4] Dual Data Layer</div>
+        <h3>PostgreSQL + Neo4j</h3>
+        <p>ACID transactional ledger paired with Cypher property graph analytics.</p>
+        <span class="chip">PostgreSQL (Bids, RFQs)</span>
+        <span class="chip">Immutable Audit Logs</span>
+        <span class="chip">Neo4j Graph (L1 Flips)</span>
+        <span class="chip">Carrier Route Topology</span>
+      </div>
+      <div class="tier-footer">SQLAlchemy 2.0 + Cypher</div>
+    </div>
+  </div>
+
+  <!-- Core Pillars -->
+  <div class="section-title">🔑 Core Architectural Pillars</div>
+  <div class="pillars">
+    <div class="pillar">
+      <div class="pillar-icon">⚡</div>
+      <h4>British Rules Engine</h4>
+      <p>Evaluates remaining time in milliseconds upon quote submission. If Δt ≤ X, evaluates trigger criteria (Any Bid, Any Rank Shift, or L1 Takeover). Extends close time by +Y minutes up to the forced close ceiling.</p>
+      <div class="pillar-math">new_close = min(current_close + Y, forced_close)</div>
+    </div>
+    <div class="pillar">
+      <div class="pillar-icon">🛡</div>
+      <h4>Forced Close Hard Cap</h4>
+      <p>Guarantees procurement predictability. No matter how active the bidding war becomes in the final seconds, bidding strictly terminates at Forced Bid Close Time, preventing indefinite extensions.</p>
+      <div class="pillar-math">forced_close_time &gt; original_bid_close_time</div>
+    </div>
+    <div class="pillar">
+      <div class="pillar-icon">🔗</div>
+      <h4>Graph Intelligence (Neo4j)</h4>
+      <p>PostgreSQL handles high-frequency ACID bid insertions, while Neo4j maps supplier underbidding relationships, competitor clusters, and route dominance graphs across domestic logistics corridors.</p>
+      <div class="pillar-math">(:Supplier)-[:UNDERBIDS {delta}]-&gt;(:Supplier)</div>
+    </div>
+  </div>
+
+  <!-- DB Schema -->
+  <div class="section-title">🗄 Database Schema Design</div>
+  <div class="schema-grid">
+    <div class="table-card">
+      <h4>rfqs</h4>
+      <div class="field"><span class="field-name">id<span class="pk">PK</span></span><span class="field-type">UUID</span></div>
+      <div class="field"><span class="field-name">name</span><span class="field-type">VARCHAR</span></div>
+      <div class="field"><span class="field-name">bid_start_time</span><span class="field-type">TIMESTAMP</span></div>
+      <div class="field"><span class="field-name">bid_close_time</span><span class="field-type">TIMESTAMP</span></div>
+      <div class="field"><span class="field-name">forced_close_time</span><span class="field-type">TIMESTAMP</span></div>
+      <div class="field"><span class="field-name">trigger_window_minutes</span><span class="field-type">INTEGER</span></div>
+      <div class="field"><span class="field-name">extension_duration_minutes</span><span class="field-type">INTEGER</span></div>
+      <div class="field"><span class="field-name">extension_trigger</span><span class="field-type">ENUM</span></div>
+      <div class="field"><span class="field-name">status</span><span class="field-type">ENUM(active/closed)</span></div>
+    </div>
+    <div class="table-card">
+      <h4>bids</h4>
+      <div class="field"><span class="field-name">id<span class="pk">PK</span></span><span class="field-type">UUID</span></div>
+      <div class="field"><span class="field-name">rfq_id<span class="pk">FK</span></span><span class="field-type">UUID</span></div>
+      <div class="field"><span class="field-name">supplier_id<span class="pk">FK</span></span><span class="field-type">UUID</span></div>
+      <div class="field"><span class="field-name">freight_charges</span><span class="field-type">NUMERIC</span></div>
+      <div class="field"><span class="field-name">origin_charges</span><span class="field-type">NUMERIC</span></div>
+      <div class="field"><span class="field-name">destination_charges</span><span class="field-type">NUMERIC</span></div>
+      <div class="field"><span class="field-name">total_amount</span><span class="field-type">NUMERIC (computed)</span></div>
+      <div class="field"><span class="field-name">transit_time</span><span class="field-type">INTEGER (days)</span></div>
+      <div class="field"><span class="field-name">submitted_at</span><span class="field-type">TIMESTAMP</span></div>
+    </div>
+    <div class="table-card">
+      <h4>suppliers</h4>
+      <div class="field"><span class="field-name">id<span class="pk">PK</span></span><span class="field-type">UUID</span></div>
+      <div class="field"><span class="field-name">name</span><span class="field-type">VARCHAR</span></div>
+      <div class="field"><span class="field-name">email</span><span class="field-type">VARCHAR (unique)</span></div>
+      <div class="field"><span class="field-name">rating</span><span class="field-type">NUMERIC</span></div>
+      <div class="field"><span class="field-name">verified</span><span class="field-type">BOOLEAN</span></div>
+      <div class="field"><span class="field-name">routes</span><span class="field-type">TEXT[]</span></div>
+    </div>
+    <div class="table-card">
+      <h4>auction_logs (Audit)</h4>
+      <div class="field"><span class="field-name">id<span class="pk">PK</span></span><span class="field-type">UUID</span></div>
+      <div class="field"><span class="field-name">rfq_id<span class="pk">FK</span></span><span class="field-type">UUID</span></div>
+      <div class="field"><span class="field-name">event_type</span><span class="field-type">VARCHAR</span></div>
+      <div class="field"><span class="field-name">description</span><span class="field-type">TEXT</span></div>
+      <div class="field"><span class="field-name">old_close_time</span><span class="field-type">TIMESTAMP</span></div>
+      <div class="field"><span class="field-name">new_close_time</span><span class="field-type">TIMESTAMP</span></div>
+      <div class="field"><span class="field-name">created_at</span><span class="field-type">TIMESTAMP</span></div>
+    </div>
+  </div>
+
+  <!-- Footer nav -->
+  <div class="footer-nav">
+    <a href="/">← Return to Live Auctions</a>
+    <a href="/tests" class="right">Explore 21 Automated Test Scenarios →</a>
+  </div>
+
+</div>
+</body>
+</html>

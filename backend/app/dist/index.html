@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BIDLEDGER — British Auction RFQ Engine</title>
+    <script type="module" crossorigin src="/assets/index-Cs-pXW0x.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DACj7pBu.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  <script>
+    // Hide "Architecture Blueprint" button (accessible via Test Matrix page instead)
+    function hideArchButton() {
+      document.querySelectorAll('button').forEach(function(btn) {
+        if ((btn.innerText || '').trim() === 'Architecture Blueprint') {
+          btn.style.display = 'none';
+        }
+      });
+    }
+    // Run after React mounts and on every DOM change
+    var obs = new MutationObserver(hideArchButton);
+    obs.observe(document.body, { childList: true, subtree: true });
+    hideArchButton();
+
+    // Intercept Architecture and Test Scenarios button clicks
+    // since the compiled bundle doesn't include those views.
+    document.addEventListener('click', function(e) {
+      var el = e.target;
+      for (var i = 0; i < 4; i++) {
+        if (!el) break;
+        var txt = (el.innerText || el.textContent || '').trim();
+        var archi = txt === 'Architecture Blueprint' || txt === 'System Architecture' || txt === 'Architecture' || txt.includes('Architecture');
+        var tests = txt === '21/21 Tests Passed' || txt.includes('Test Scenario') || txt.includes('21 Automated') || txt.includes('Explore 21');
+        if (archi) {
+          e.preventDefault(); e.stopPropagation();
+          window.location.href = '/architecture';
+          return;
+        }
+        if (tests) {
+          e.preventDefault(); e.stopPropagation();
+          window.location.href = '/tests';
+          return;
+        }
+        el = el.parentElement;
+      }
+    }, true);
+  </script>
+  </body>
+</html>
