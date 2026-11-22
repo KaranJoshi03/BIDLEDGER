@@ -4,6 +4,8 @@
 
 ### Enterprise British Auction RFQ Engine with Dynamic Trigger Extensions & Forced Close Caps
 
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Deployment-bidledger--auction.onrender.com-10B981?style=for-the-badge&logo=render&logoColor=white)](https://bidledger-auction.onrender.com/)
+
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI_0.110-009688.svg?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/Frontend-React_19_Vite-61DAFB.svg?style=flat-square&logo=react&logoColor=black)](https://react.dev)
 [![TailwindCSS](https://img.shields.io/badge/Styling-Tailwind_Dark_Mode-06B6D4.svg?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
@@ -13,6 +15,10 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 
 *A specialized logistics procurement engine engineered to eradicate last-second bid sniping through algorithmic trigger-window extensions bounded by hard forced-close ceilings, paired with property-graph market intelligence.*
+
+**🌐 Production URL**: [https://bidledger-auction.onrender.com](https://bidledger-auction.onrender.com/)  
+**🏛 Architecture Blueprint**: [https://bidledger-auction.onrender.com/architecture](https://bidledger-auction.onrender.com/architecture)  
+**🛡 Automated Test Matrix**: [https://bidledger-auction.onrender.com/tests](https://bidledger-auction.onrender.com/tests)
 
 </div>
 
